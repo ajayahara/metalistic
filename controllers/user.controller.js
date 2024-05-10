@@ -2,10 +2,11 @@ const { UserModel } = require("../models/user.model");
 
 const getAllUsers = async (req, res) => {
   const { page } = req.query;
+  const defaultPage = page >= 1 ? page : 1;
   const limit = 10;
   try {
     const users = await UserModel.find()
-      .skip((page - 1) * limit)
+      .skip((defaultPage - 1) * limit)
       .limit(limit);
 
     res.status(200).json(users);
@@ -16,6 +17,7 @@ const getAllUsers = async (req, res) => {
 };
 
 const getUserById = async (req, res) => {
+  const { userId } = req.params;
   try {
     const user = await UserModel.findById(userId);
     if (!user) {
