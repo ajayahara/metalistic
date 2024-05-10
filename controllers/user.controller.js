@@ -8,8 +8,7 @@ const getAllUsers = async (req, res) => {
     const users = await UserModel.find()
       .skip((defaultPage - 1) * limit)
       .limit(limit);
-
-    res.status(200).json(users);
+    return res.status(200).json(users);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -49,6 +48,11 @@ const distributeEarning = async (req, res) => {
   const { userId } = req.params;
   const { toBeDistribute } = req.query;
   try {
+    if (!toBeDistribute || toBeDistribute < 0) {
+      return res.status(400).json({
+        error: "Distribution amount could not be less than 0 or undefined",
+      });
+    }
     const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -58,6 +62,9 @@ const distributeEarning = async (req, res) => {
     let parent = user;
     while (parent.parent_id && level <= 8) {
       const parentDetail = await UserModel.findById(parent.parent_id);
+      if (!parentDetail) {
+        break;
+      }
       const { _id, name, earning } = parentDetail;
       await UserModel.findByIdAndUpdate(_id, {
         earning: earning + toBeDistribute * percent[level - 1],
