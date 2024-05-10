@@ -1,13 +1,15 @@
 require("dotenv").config();
 const express = require("express");
 const { connection } = require("./config/db");
+const { userRoute } = require("./routes/user.route");
 
 const port = process.env.PORT || 8000;
 const app = express();
 app.use(express.json());
 
-app.get('/',(req,res)=>{
-    return res.status(200).json({message:"Metalistic Home Page"})
+app.use("/api", userRoute);
+app.get("/", (req, res) => {
+  return res.status(200).json({ message: "Metalistic Home Page" });
 });
 
 app.listen(port, async () => {
