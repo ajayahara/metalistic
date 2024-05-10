@@ -46,7 +46,34 @@ const addUser = async (req, res) => {
 };
 
 const distributeEarning = async (req, res) => {
+  const { userId } = req.params;
+  const { toBeDistribute } = req.query;
   try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const percent = [0.2, 0.1, 0.05, 0.01, 0.01, 0.01, 0.01, 0.01];
+    let level = 1;
+    let parent = user;
+    while (parent.parent_id && level <= 8) {
+      const parentDetail = await UserModel.findById(parent.parent_id);
+      const { _id, name, earning } = parentDetail;
+      await UserModel.findByIdAndUpdate(_id, {
+        earning: earning + toBeDistribute * percent[level - 1],
+      });
+      parent = parentDetail;
+      level++;
+    }
+    let remaining = 0.6;
+    while (level <= 8) {
+      remaining += percent[level - 1];
+      level++;
+    }
+    await UserModel.findByIdAndUpdate(user._id, {
+      earning: user.earning + toBeDistribute * remaining,
+    });
+    return res.status(200).json({ message: "Earning Distributed" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal server error" });
