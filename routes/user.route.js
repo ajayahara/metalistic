@@ -9,7 +9,7 @@ const {
 const userRoute = express.Router();
 
 userRoute.get("/users",getAllUsers)
-userRoute.get("/users/user_id",getUserById)
+userRoute.get("/users/userId",getUserById)
 userRoute.post("/users", addUser);
 userRoute.post("/distribute", distributeEarning);
 
