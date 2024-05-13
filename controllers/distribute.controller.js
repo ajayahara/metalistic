@@ -1,6 +1,13 @@
 const { UserModel } = require("../models/user.model");
 
-const percent = [0.2, 0.1, 0.05, 0.01, 0.01, 0.01, 0.01, 0.01];
+class Node {
+  constructor(data) {
+    this.data = data;
+    this.next = null;
+  }
+}
+
+const percent = [20, 10, 5, 1, 1, 1, 1, 1];
 const totalLevels = percent.length;
 
 const distributeEarning = async (req, res) => {
@@ -11,24 +18,35 @@ const distributeEarning = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const totalPerDistribute = parent.reduce((acc, val) => {
-      return acc + val;
-    }, 0);
-    let remaining = 1 - totalPerDistribute;
+    let totalPerToDistribute = 0;
+    for (let i = 0; i < totalLevels; i++) {
+      totalPerToDistribute += percent[i];
+    }
+    let remaining = 100 - totalPerToDistribute;
+    if (remaining <= 0) {
+      return res.status(400).json({ error: "The user must earn something" });
+    }
 
     // Distribution to parents
-    let level = 1;
     let parent = user;
+    let level = 1;
+    let head = new Node(parent);
+    let current = head;
     while (parent.parent_id && level <= totalLevels) {
       const parentDetail = await UserModel.findById(parent.parent_id);
       if (!parentDetail) {
         break;
       }
-      const { _id, name, earning } = parentDetail;
+      const { _id, earning } = parentDetail;
+      const updatedEarning =
+        earning + (toBeDistribute * percent[level - 1]) / 100;
       await UserModel.findByIdAndUpdate(_id, {
-        earning: earning + toBeDistribute * percent[level - 1],
+        earning: updatedEarning,
       });
+      parentDetail.earning = updatedEarning;
       parent = parentDetail;
+      current.next = new Node(parentDetail);
+      current = current.next;
       level++;
     }
     // Distribute to himself
@@ -36,11 +54,16 @@ const distributeEarning = async (req, res) => {
       remaining += percent[level - 1];
       level++;
     }
+    const updatedUserEarning=user.earning + (toBeDistribute * remaining) / 100;
     await UserModel.findByIdAndUpdate(user._id, {
-      earning: user.earning + toBeDistribute * remaining,
+      earning: updatedUserEarning,
     });
-
-    return res.status(200).json({ message: "Earning Distributed" });
+    user.earning=updatedUserEarning;
+    const newHead = new Node(user);
+    newHead.next = head.next;
+    return res
+      .status(200)
+      .json({ message: "Earning Distributed", distribution: newHead });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Internal server error" });

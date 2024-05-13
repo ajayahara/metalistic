@@ -13,8 +13,8 @@ app.get("/", (req, res) => {
   return res.status(200).json({ message: "Metalistic Home Page" });
 });
 
-app.use("api/user", userRoute);
-app.use("api/distribute",distributeRoute)
+app.use("/api/users", userRoute);
+app.use("/api/distribute",distributeRoute)
 
 
 app.listen(port, async () => {

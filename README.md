@@ -122,7 +122,7 @@ Check terminal for errors and ensure environment variables are correctly defined
     { "error": "Internal server error" }
     ```
 
-### Distribute Earning
+## Distribute Earning
 
 - **Description:** Distributes earnings to users based on a predefined percentage structure.
 - **URL:** `/api/distribute/:userId`
@@ -153,6 +153,7 @@ Check terminal for errors and ensure environment variables are correctly defined
     ```json
     { "error": "Internal server error" }
     ```
+
 ## Explanation of `distributeEarning` Controller
 
 The `distributeEarning` function is an asynchronous function that handles the distribution of earnings to users based on a predefined percentage structure. Below is a breakdown of its functionality:
