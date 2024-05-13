@@ -2,15 +2,20 @@ require("dotenv").config();
 const express = require("express");
 const { connection } = require("./config/db");
 const { userRoute } = require("./routes/user.route");
+const { distributeRoute } = require("./routes/distribute.route");
 
 const port = process.env.PORT || 8000;
 const app = express();
 app.use(express.json());
 
-app.use("/api", userRoute);
+
 app.get("/", (req, res) => {
   return res.status(200).json({ message: "Metalistic Home Page" });
 });
+
+app.use("api/user", userRoute);
+app.use("api/distribute",distributeRoute)
+
 
 app.listen(port, async () => {
   try {
